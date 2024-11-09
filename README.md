@@ -23,17 +23,15 @@ preferensi mereka di tengah pilihan buku yang semakin luas.
 
 ## Problem Statements (Pernyataan Masalah)
 
-- Banyak pembaca kesulitan menemukan buku yang sesuai dengan minat atau preferensi mereka karena jumlah buku yang terus berkembang.
-- Pilihan buku yang banyak membuat pengguna merasa kewalahan atau kehilangan minat dalam mencari buku yang relevan.
-- Platform buku, seperti toko buku online atau perpustakaan digital, menghadapi tantangan dalam menyajikan rekomendasi yang akurat dan personal kepada pengguna.
-- Pengalaman pengguna yang kurang memuaskan berpotensi menurunkan keterlibatan dan loyalitas pengguna.
+- Bagaimana cara menciptakan sistem rekomendasi buku yang dapat secara akurat menyesuaikan saran berdasarkan preferensi pembaca?
+- Dapatkah rekomendasi buku yang disesuaikan untuk masing-masing pengguna meningkatkan interaksi dan daya tarik platform dalam jangka panjang?
+- Bagaimana perbedaan metode rekomendasi, seperti berbasis konten atau kolaboratif, dapat mempengaruhi kualitas dan relevansi saran buku yang diberikan?
 
 ## Goals (Tujuan)
 
-- Membangun sistem rekomendasi buku yang memberikan rekomendasi relevan dan personal berdasarkan preferensi atau perilaku pengguna.
-- Mempermudah pengguna dalam menemukan buku yang sesuai dengan minat mereka untuk meningkatkan pengalaman membaca.
-- Meningkatkan minat baca di kalangan masyarakat dengan menyediakan rekomendasi buku yang tepat dan menarik.
-- Membantu platform buku meningkatkan keterlibatan pengguna dan mengoptimalkan pengalaman berbelanja atau meminjam buku.
+- Meningkatkan interaksi pengguna dengan menyediakan rekomendasi buku yang disesuaikan dengan kebutuhan dan preferensi pribadi mereka.
+- Memberikan saran buku yang tidak hanya relevan tetapi juga bervariasi, dengan mempertimbangkan berbagai aspek seperti genre, penulis, dan rating.
+- Eksperimen dengan berbagai teknik rekomendasi untuk menilai mana yang menghasilkan kualitas saran terbaik dan meningkatkan pengalaman pengguna.
 
 ## Solution Approach
 
@@ -47,6 +45,7 @@ Pendekatan ini menggunakan informasi tentang buku itu sendiri (seperti genre, pe
 - Ekstraksi fitur dari buku (genre, pengarang, kata kunci, dsb).
 - Membangun profil pengguna berdasarkan buku yang pernah dibaca atau disukai.
 - Menyajikan rekomendasi buku berdasarkan kesamaan fitur antara buku yang telah dibaca dan buku lainnya.
+- Metrik Evaluasi : Precision
 
 ### 2. Collaborative Filtering
 
@@ -56,6 +55,7 @@ Pendekatan ini berfokus pada perilaku atau preferensi pengguna lain yang serupa 
 - Pengumpulan data interaksi pengguna dengan buku (rating buku).
 - Mencari pengguna yang memiliki preferensi serupa dengan pengguna target.
 - Memberikan rekomendasi berdasarkan preferensi pengguna serupa.
+- Metrik Evaluasi: RMSE
 
 Kedua pendekatan ini memiliki kekuatan dan keterbatasan masing-masing. Content-Based Filtering lebih mengandalkan informasi konten buku, sementara Collaborative Filtering lebih mengandalkan interaksi sosial atau pola perilaku pengguna. Dalam beberapa kasus, kombinasi dari kedua pendekatan ini dapat memberikan hasil yang lebih optimal dalam menyajikan rekomendasi yang akurat dan relevan bagi pengguna.
 
@@ -148,22 +148,70 @@ Dan diatas ini merupakan distribusi tahun penerbitan buku, bisa dilihat ada 4618
 ## Data Preparation
 
 1. **Data Cleaning**:
-   - **Missing Value Handling**: Menangani nilai yang hilang pada kolom `Book-Title`, `Book-Author`, `Year-Of-Publication`, dan `Publisher` dengan menghapus atau mengisi nilai kosong. Tahap ini bertujuan agar data yang digunakan pada model lengkap dan reliabel.
-     - **Alasan**: Kolom-kolom ini berisi informasi penting untuk rekomendasi. Mengatasi nilai yang hilang membantu meningkatkan akurasi dan validitas model dengan data yang tidak memiliki kekosongan signifikan.
 
-   - **Drop Duplicates**: Menghapus duplikasi baris dalam data untuk menghindari pengaruh ganda dari data yang sama dalam hasil rekomendasi. Data yang duplikat bisa mengubah distribusi dan menyebabkan model belajar dari data yang berlebihan.
-     - **Alasan**: Menghindari data duplikat penting agar model tidak overfitting pada informasi yang sama secara berlebihan, yang dapat mengurangi kualitas rekomendasi.
+   - Data Cleaning - Mengubah Nama Kolom
+      - **Proses:** Mengubah nama kolom pada DataFrame `ratings`, `users`, dan `books` agar lebih konsisten dan mudah dipahami. Kolom `User-ID` diubah menjadi `userID`, `Book-Rating` menjadi `bookRating`, dan kolom pada DataFrame `books` seperti `Book-Title`, `Book-Author`, `Year-Of-Publication`, serta `Publisher` diubah menjadi `title`, `author`, `year`, dan `publisher` masing-masing.  
+      - **Alasan:** Penamaan kolom yang konsisten mempermudah pemahaman dan pengolahan data, serta meningkatkan keterbacaan dalam analisis lebih lanjut.
+   
+   - Data Cleaning - Menghapus Kolom yang Tidak Diperlukan
+      - **Proses:** Menghapus kolom `Image-URL-S`, `Image-URL-M`, dan `Image-URL-L` dari DataFrame `books`, karena kolom ini tidak berpengaruh pada model rekomendasi.  
+      - **Alasan:** Menghapus kolom yang tidak relevan penting untuk mengurangi ukuran dataset, mempercepat proses pemrosesan data, dan memastikan model hanya menggunakan data yang berguna untuk rekomendasi.
+   
+   - Data Cleaning - Menghapus Missing Value
+      - **Proses:** Menghapus baris yang memiliki nilai kosong (`null`) pada DataFrame `books` menggunakan metode `dropna()`.  
+      - **Alasan:** Nilai kosong dapat menyebabkan kesalahan dalam analisis dan pemodelan. Menghapus baris dengan missing value membantu memastikan bahwa data yang digunakan dalam model bersih dan lengkap.
+   
+   - Merging Files dan Menghapus Missing Value Setelah Merge
+      - **Proses:** Menggabungkan DataFrame `ratings` dan `books` berdasarkan kolom `ISBN` menggunakan operasi merge. Setelah penggabungan, baris yang mengandung nilai kosong (missing value) dihapus.  
+      - **Alasan:** Penggabungan ini memberikan informasi yang lengkap mengenai buku terkait dengan rating yang diberikan oleh pengguna. Menghapus missing value setelah merge penting untuk memastikan integritas data yang digunakan dalam model.
+   
+   - Data Cleaning - Pengurutan Berdasarkan ISBN
+      - **Proses:** Mengurutkan DataFrame berdasarkan kolom `ISBN` untuk memastikan urutan data sesuai dengan kode unik buku.  
+      - **Alasan:** Pengurutan data berdasarkan `ISBN` memastikan konsistensi dan kemudahan dalam pemrosesan data lebih lanjut, khususnya saat mengelola dataset besar yang memiliki identifikasi unik.
+   
+   - Data Cleaning - Menghapus Tahun Terbit yang Tidak Valid
+      - **Proses:** Menghapus baris dengan nilai tahun terbit yang bernilai `0`, karena nilai tersebut dianggap sebagai indikasi data yang tidak valid.  
+      - **Alasan:** Menghapus nilai `0` pada kolom `year` penting untuk mencegah penggunaan data yang tidak akurat, yang dapat memengaruhi kualitas rekomendasi yang dihasilkan oleh model.
+   
+   - Data Cleaning - Menghapus Duplikasi Berdasarkan ISBN
+      - **Proses:** Menghapus duplikasi berdasarkan kolom `ISBN` dengan metode `drop_duplicates()` untuk memastikan setiap buku hanya muncul sekali dalam dataset.  
+      - **Alasan:** Menghindari duplikasi membantu model untuk belajar dari data yang tidak berlebihan, mencegah overfitting, dan memastikan kualitas rekomendasi yang lebih baik.
+   
+   - Data Preparation - Mengkonversi Data ke Dalam Bentuk List
+      - **Proses:** Mengonversi kolom `ISBN`, `title`, `author`, `year`, dan `publisher` menjadi format list untuk mempermudah pemrosesan lebih lanjut dalam model rekomendasi.  
+      - **Alasan:** Mengonversi data ke dalam bentuk list memungkinkan akses yang lebih mudah dan lebih cepat terhadap data yang akan digunakan dalam algoritma rekomendasi.
+   
+   - Data Preparation - Membatasi Data pada 30,000 Baris Teratas
+      - **Proses:** Membatasi dataset hanya pada 30,000 baris teratas menggunakan slicing untuk mempercepat proses pemodelan dan analisis.  
+      - **Alasan:** Membatasi jumlah data membantu dalam mempercepat waktu komputasi dan memfokuskan model pada data yang lebih terkelola, menghindari masalah memori atau waktu proses yang terlalu lama.
 
 2. **Content-Based Filtering**:
-   - **TF-IDF (Term Frequency-Inverse Document Frequency)**: Menggunakan TF-IDF untuk menghitung representasi bobot fitur gabungan dari `Book-Author` dan `Title`. Teknik ini mengekstrak informasi penting dari teks untuk memberi bobot pada istilah yang muncul unik pada buku tertentu.
-     - **Alasan**: Dengan menggabungkan `Book-Author` dan `Title`, model memahami karakteristik konten buku secara lebih spesifik. TF-IDF membantu mengidentifikasi buku yang mirip berdasarkan kombinasi penulis dan judul, sehingga meningkatkan relevansi rekomendasi konten.
+   - Menggabungkan Kolom Book-Title dan Book-Author
+      - **Proses:** Menggabungkan kolom `Book-Title` dan `Book-Author` menjadi satu string untuk menciptakan fitur teks baru yang lebih kaya. Hasil penggabungan ini disimpan dalam variabel `combined`. Kolom `combined` ini digunakan untuk menganalisis hubungan antara judul dan penulis buku sebagai satu entitas tunggal.  
+      - **Alasan:** Dengan menggabungkan judul dan penulis, kita menciptakan fitur yang lebih kaya dan deskriptif yang menggabungkan informasi penting untuk rekomendasi buku. Ini meningkatkan kualitas analisis tekstual dan memudahkan model dalam memahami konteks buku secara keseluruhan.
+   
+   - Menggunakan TF-IDF untuk Menghitung Representasi Bobot Fitur Gabungan
+      - **Proses:** Menggunakan teknik TF-IDF (Term Frequency-Inverse Document Frequency) untuk menghitung representasi bobot dari fitur gabungan `combined` yang mencakup informasi dari `Book-Title` dan `Book-Author`. TF-IDF memberikan bobot yang lebih tinggi pada kata-kata yang unik dan relevan dalam buku tertentu, serta mengurangi pengaruh kata-kata yang umum digunakan di seluruh dataset.  
+      - **Alasan:** TF-IDF digunakan untuk mengekstrak informasi penting dari teks, memberikan bobot lebih pada istilah yang relevan dan unik dalam konteks buku tertentu. Ini membantu dalam meningkatkan akurasi dan relevansi rekomendasi berdasarkan kesamaan konten antar buku.
+
 
 3. **Collaborative Filtering**:
-   - **Encoding & Label Encoding**: Mengubah data kategorikal pada kolom `UserID` dan `ISBN` menjadi bentuk numerik agar dapat diproses oleh model collaborative filtering. Label encoding mengonversi setiap kategori menjadi angka yang dibutuhkan untuk sebagian besar algoritma rekomendasi.
-     - **Alasan**: Encoding memungkinkan model untuk memahami data kategorikal seperti `UserID` dan `ISBN` dalam format numerik, yang esensial untuk mendeteksi pola preferensi pengguna.
+   - Membatasi Data Ratings Teratas
+      - **Proses:** Membatasi dataset `ratings` hanya pada 30,000 baris teratas dengan menggunakan slicing untuk mempercepat proses pemodelan dan analisis.  
+      - **Alasan:** Membatasi jumlah data membantu dalam mempercepat waktu komputasi dan memfokuskan model pada data yang lebih terkelola, menghindari masalah memori atau waktu proses yang terlalu lama.
+      
+   - Mengubah Data Kategorikal pada Kolom UserID dan ISBN
+      - **Proses:** Mengubah data kategorikal pada kolom `UserID` dan `ISBN` menjadi bentuk numerik menggunakan label encoding. Label encoding mengonversi setiap kategori menjadi angka yang dibutuhkan untuk sebagian besar algoritma rekomendasi.  
+      - **Alasan:** Proses ini penting karena sebagian besar algoritma collaborative filtering membutuhkan input dalam bentuk numerik. Label encoding memungkinkan model untuk memproses data kategorikal seperti `UserID` dan `ISBN` dalam format yang dapat dihitung.
+   
+   - Mengacak Dataset
+      - **Proses:** Mengacak dataset dengan metode `sample(frac=1, random_state=42)` untuk memastikan distribusi data yang lebih merata sebelum pemisahan data.  
+      - **Alasan:** Pengacakan dataset penting untuk menghindari bias dalam pembagian data dan memastikan model belajar dari sampel yang representatif dari seluruh dataset.
+   
+   - Melakukan Data Splitting 80:20
+      - **Proses:** Membagi dataset menjadi dua bagian, yaitu 80% untuk data pelatihan dan 20% untuk data pengujian, dengan menghitung indeks pembagian menggunakan `int(0.8 * df.shape[0])`.  
+      - **Alasan:** Membagi data menjadi set pelatihan dan pengujian memungkinkan untuk evaluasi model yang lebih baik. Data pelatihan digunakan untuk membangun model, sementara data pengujian digunakan untuk mengukur kinerja model dalam kondisi yang belum pernah dilihat sebelumnya.
 
-   - **Data Splitting**: Memisahkan data menjadi bagian training dan testing untuk evaluasi model. Pemisahan data penting agar performa model dapat diuji pada data yang belum pernah dilihat model sebelumnya, sehingga hasilnya lebih akurat dan bisa digunakan untuk memprediksi rating atau interaksi buku yang belum ada.
-     - **Alasan**: Data splitting memastikan bahwa model dilatih dan diuji dengan data yang berbeda, sehingga hasilnya dapat dievaluasi secara objektif dan performanya pada data baru dapat diperkirakan dengan lebih baik.
 
 ---
 
@@ -183,7 +231,47 @@ Dalam proyek ini, sistem rekomendasi dibangun menggunakan dua pendekatan, yaitu 
      - Rentan terhadap *over-specialization*, yaitu ketika sistem hanya merekomendasikan buku-buku yang sangat mirip dengan yang sudah dibaca tanpa variasi.
      - Tidak mampu menangkap preferensi pengguna di luar atribut konten buku yang sudah tersedia (misalnya, genre baru atau buku dari penulis yang berbeda).
 
-**Hasil**
+### Fungsi book_recommendations
+
+Fungsi `book_recommendations` digunakan untuk memberikan rekomendasi buku berdasarkan kemiripan dengan buku yang diberikan. Fungsi ini menggunakan data kemiripan antar buku untuk menghasilkan daftar buku yang serupa dengan buku yang disebutkan dalam parameter.
+
+#### Parameter:
+- **nama_buku** (tipe data: string):
+  Nama buku yang akan digunakan sebagai referensi untuk mendapatkan rekomendasi. Buku ini akan menjadi acuan untuk mencari buku-buku lain yang memiliki kemiripan.
+
+- **similarity_data** (tipe data: `pd.DataFrame`, default: `cosine_sim_df`):
+  Dataframe yang berisi nilai kemiripan antara buku-buku, biasanya berupa matriks kemiripan cosine yang disusun dalam bentuk simetrik dengan buku-buku sebagai indeks dan kolom. Setiap nilai di dalam dataframe menunjukkan tingkat kemiripan antara buku-buku yang ada.
+
+- **items** (tipe data: `pd.DataFrame`, default: `data[['book_title', 'book_author']]`):
+  Dataframe yang berisi informasi buku, seperti `book_title` (judul buku) dan `book_author` (penulis buku). Data ini digunakan untuk memberikan detail tambahan tentang buku yang direkomendasikan.
+
+- **k** (tipe data: integer, default: 10):
+  Menentukan jumlah rekomendasi yang ingin diberikan. Fungsi ini akan mengembalikan `k` buku yang paling mirip dengan buku yang diberikan berdasarkan kemiripan yang dihitung.
+
+#### Cara Kerja Fungsi:
+1. **Mengambil Kemiripan Buku:**
+   Fungsi ini pertama-tama akan mencari kemiripan buku yang diberikan (`nama_buku`) dengan menggunakan dataframe `similarity_data`. Kemiripan dihitung berdasarkan nilai cosine similarity antara buku yang diberikan dengan buku-buku lainnya.
+
+2. **Menemukan Buku yang Paling Mirip:**
+   Menggunakan `argpartition()`, fungsi ini akan memilih `k` buku dengan nilai kemiripan tertinggi. Fungsi `argpartition()` secara efisien memilih nilai terbesar tanpa mengurutkan seluruh array, yang membantu mempercepat proses untuk dataset yang besar.
+
+3. **Membuang Nama Buku yang Dicari:**
+   Setelah mendapatkan buku-buku yang paling mirip, fungsi ini akan menghapus buku yang dicari dari daftar rekomendasi untuk menghindari kemunculan buku yang sama dalam hasil rekomendasi.
+
+4. **Menggabungkan Data Buku:**
+   Setelah mendapatkan daftar buku yang paling mirip, fungsi akan menggabungkan hasil tersebut dengan informasi buku lainnya (judul dan penulis) yang ada dalam `items`. Ini akan menghasilkan dataframe yang berisi informasi lengkap tentang buku-buku yang direkomendasikan.
+
+5. **Mengembalikan Rekomendasi Buku:**
+   Fungsi ini mengembalikan dataframe yang berisi `k` buku yang paling mirip dengan buku yang diberikan beserta informasi tambahan tentang setiap buku.
+
+#### Contoh Penggunaan:
+Jika kita ingin merekomendasikan 5 buku yang mirip dengan buku "Harry Potter", kita dapat memanggil fungsi ini seperti berikut:
+
+```python
+book_recommendations("Little Wolf's Book of Badness")
+```
+
+**Hasil :**
 
   Berikut adalah Top 10 dari rekomendasi dengan judul buku "Little Wolf's Book of Badness" menggunakan Content Based Filtering
   | Book Title                                        | Book Author       |
@@ -211,8 +299,96 @@ Dalam proyek ini, sistem rekomendasi dibangun menggunakan dua pendekatan, yaitu 
    - **Kekurangan**:
      - Memerlukan data interaksi yang besar untuk melatih model, yang mungkin sulit jika data pengguna yang tersedia terbatas.
      - Cenderung lebih kompleks dan memerlukan sumber daya komputasi yang lebih tinggi dibandingkan metode content-based.
-    
-**Hasil**
+
+### OptimizedRecommenderNet - Model untuk Rekomendasi
+
+Fungsi `OptimizedRecommenderNet` adalah model neural network yang dirancang untuk rekomendasi buku berbasis Collaborative Filtering. Model ini menggunakan embedding untuk representasi pengguna dan buku, serta menerapkan teknik regularisasi dan optimasi untuk meningkatkan akurasi dan mencegah overfitting.
+
+#### Struktur Model:
+
+1. **User and Book Embeddings:**
+   - **`self.user_embedding`:** Layer embedding untuk pengguna yang mengonversi ID pengguna menjadi vektor berdimensi rendah.
+     - **Parameter:**
+       - `num_users`: Jumlah total pengguna dalam dataset.
+       - `embedding_size`: Ukuran vektor embedding, yang menentukan dimensi representasi pengguna.
+       - `embeddings_initializer='he_normal'`: Inisialisasi bobot embedding menggunakan distribusi normal dengan standar deviasi yang dikalibrasi agar cocok dengan fungsi aktivasi ReLU.
+       - `embeddings_regularizer=regularizers.l2(1e-6)`: Regularisasi L2 untuk mengurangi overfitting, dengan faktor penalti sebesar `1e-6`.
+
+   - **`self.book_embedding`:** Layer embedding untuk buku yang mengonversi ID buku menjadi vektor berdimensi rendah.
+     - **Parameter yang sama dengan `self.user_embedding`**.
+
+   - **`self.user_bias` dan `self.book_bias`:** Layer embedding untuk bias pengguna dan bias buku, masing-masing menghasilkan satu nilai untuk setiap pengguna dan buku.
+     - **Parameter:**
+       - `num_users` dan `num_book`: Jumlah total pengguna dan buku.
+       - `1`: Ukuran output adalah 1, karena setiap pengguna dan buku memiliki satu nilai bias.
+
+2. **Hidden Layers dengan Batch Normalization:**
+   - **`self.dense1`, `self.dense2`, `self.dense3`:** Lapisan dense yang masing-masing terdiri dari 256, 128, dan 64 unit. Setiap lapisan ini dilengkapi dengan regularisasi L2.
+     - **Parameter:**
+       - `units`: Jumlah unit (neuron) pada setiap lapisan.
+       - `kernel_regularizer=regularizers.l2(1e-6)`: Regularisasi L2 untuk mencegah overfitting pada bobot model.
+
+   - **`self.bn1`, `self.bn2`, `self.bn3`:** Batch Normalization setelah setiap lapisan dense untuk mempercepat pelatihan dan meningkatkan stabilitas.
+     - **Fungsi:** Menormalkan input ke lapisan berikutnya untuk menjaga distribusi data yang stabil selama pelatihan.
+
+   - **Fungsi Aktivasi `ReLU`:** Digunakan pada lapisan tersembunyi untuk memperkenalkan non-linearitas. ReLU membantu model untuk belajar representasi yang lebih kompleks.
+
+3. **Dropout:**
+   - **`self.dropout`:** Dropout diterapkan setelah lapisan tersembunyi untuk mencegah overfitting dengan menghilangkan 60% neuron secara acak selama pelatihan.
+     - **Parameter:**
+       - `rate=0.6`: Ini berarti 60% dari neuron akan diabaikan selama pelatihan pada setiap iterasi.
+     - **Tujuan:** Mencegah model untuk terlalu mengandalkan beberapa neuron tertentu dan meningkatkan generalisasi.
+
+4. **Output Layer:**
+   - **`self.output_layer`:** Layer output dengan satu unit dan fungsi aktivasi `sigmoid` untuk menghasilkan output berupa probabilitas rating (antara 0 dan 1).
+     - **Parameter:**
+       - `units=1`: Menghasilkan satu nilai prediksi untuk rating.
+       - `activation='sigmoid'`: Fungsi aktivasi sigmoid digunakan untuk memetakan hasil ke rentang 0-1.
+
+#### Fungsi `call`:
+- **Proses:** 
+  1. Menerima input berupa ID pengguna dan ID buku.
+  2. Mengambil embedding untuk pengguna dan buku.
+  3. Menghitung interaksi antara pengguna dan buku menggunakan `tensordot`.
+  4. Menambahkan bias pengguna dan buku pada hasil interaksi.
+  5. Memasukkan hasilnya melalui beberapa lapisan dense dengan batch normalization dan fungsi aktivasi `relu`.
+  6. Mengaplikasikan dropout setelah lapisan tersembunyi.
+  7. Menyelesaikan proses dengan menghasilkan satu nilai prediksi rating menggunakan layer output.
+
+---
+
+### Kompilasi dan Pelatihan Model
+
+1. **Learning Rate Scheduler:**
+   - Digunakan untuk menurunkan learning rate secara eksponensial setiap epoch untuk meningkatkan konvergensi model.
+   - Fungsi `LearningRateScheduler` mengurangi learning rate dengan faktor 0.9 setiap epoch, dimulai dari `1e-4`.
+
+2. **Kompilasi Model:**
+   - **Loss Function:** `BinaryCrossentropy` digunakan untuk model yang menghasilkan output probabilitas (misalnya rating 0 atau 1).
+   - **Optimizer:** `Adam` dengan learning rate awal `1e-4`.
+   - **Metrics:** `RootMeanSquaredError` digunakan untuk mengevaluasi seberapa baik model dalam memprediksi rating.
+
+3. **Fit Model:**
+   - **Training Data:** `x_train` dan `y_train` digunakan untuk pelatihan.
+   - **Validation Data:** `x_val` dan `y_val` digunakan untuk validasi model pada setiap epoch.
+   - **Callbacks:** Learning rate scheduler diterapkan untuk menyesuaikan learning rate selama pelatihan.
+   - Model dilatih dengan batch size 32 dan selama 8 epoch.
+
+#### Yang digunakan di proyek:
+```python
+model = OptimizedRecommenderNet(num_users, num_book, 50)  # Inisialisasi model
+
+history = model.fit(
+    x=x_train,
+    y=y_train,
+    batch_size=32,
+    epochs=8,
+    validation_data=(x_val, y_val),
+    callbacks=[lr_scheduler]
+)
+```
+
+**Hasil :**
 
 Berikut adalah buku yang dapat rating terbesar dari userID 2103
 
@@ -246,11 +422,7 @@ Untuk mengukur kinerja model rekomendasi, digunakan dua metrik evaluasi yang ses
 
 ### 1. Content-Based Filtering Evaluation: Precision
 - **Metrik**: Precision
-  - **Formula**:
-    
-  $$
-  \text{Precision} = \frac{\text{Jumlah rekomendasi yang relevan}}{\text{Jumlah item yang direkomendasikan}}
-  $$
+  - **Formula**: Precision = Jumlah rekomendasi yang relevan/Jumlah item yang direkomendasikan
 
   - **Penjelasan**: Precision mengukur seberapa banyak dari rekomendasi yang diberikan oleh sistem benar-benar relevan dengan preferensi pengguna. Semakin tinggi precision, semakin baik sistem dalam memberikan rekomendasi yang relevan dan bermanfaat bagi pengguna.
   
@@ -276,9 +448,8 @@ Dari output yang diberikan, kita melihat ada **9 buku** yang relevan berdasarkan
 | Children of the Wolf                              | Jane Yolen        |
 
 #### Menghitung Precision:
-$$
-\text{Precision} = \frac{9}{10} = 0.9
-$$
+
+Precision = 9/10 = 0.9
 
 **Kesimpulan :**
 
@@ -286,28 +457,10 @@ Jadi, **precision** untuk rekomendasi ini adalah **0.9** atau 90%.
 
 ### 2. Collaborative Filtering Evaluation: RMSE (Root Mean Square Error)
 - **Metrik**: RMSE
-  - **Formula**:
-    
-$$
-\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (r_{ui} - \hat{r}_{ui})^2}
-$$
-    
-Di mana:
+  - **Formula :**
+    RMSE = √(1/n ∑(r_ui - r_hat_ui)²)
 
-$$ \( r_{ui} \) $$ 
-
-adalah rating aktual yang diberikan oleh pengguna \( u \) untuk item \( i \),
-
-$$ \( \hat{r}_{ui} \) $$ 
-
-adalah rating yang diprediksi oleh model untuk item \( i \),
-
-$$ \( n \) $$ 
-
-adalah jumlah data yang diuji.
-  
   - **Penjelasan**: RMSE mengukur seberapa baik model dalam memprediksi rating pengguna untuk buku yang belum mereka beri rating. RMSE yang lebih rendah menunjukkan bahwa model mampu memprediksi rating dengan lebih akurat, yang penting untuk memberikan rekomendasi yang sesuai dengan preferensi pengguna.
-
   - **Cara Kerja**: RMSE menghitung selisih antara rating aktual dan rating yang diprediksi, kemudian mengkuadratkan perbedaan tersebut. Hasil kuadratnya dijumlahkan, dibagi dengan jumlah data yang diuji, dan diakarkan untuk memberikan nilai kesalahan prediksi rata-rata. Model dengan RMSE yang lebih kecil menunjukkan prediksi yang lebih akurat.
 ---
 
@@ -325,20 +478,62 @@ Dengan menggunakan precision dan RMSE, kita dapat mengevaluasi kinerja kedua mod
 **Kesimpulan :**
 Model menunjukkan performa yang baik pada data pelatihan, dengan nilai RMSE yang relatif rendah. Namun, ada sedikit peningkatan pada validasi loss dan validasi RMSE, yang bisa mengindikasikan bahwa model mulai mengalami overfitting atau masih membutuhkan peningkatan lebih lanjut. Penyesuaian lebih lanjut seperti penggunaan regularisasi atau lebih banyak epoch bisa membantu mengurangi gap antara pelatihan dan validasi performance.
 
-## Conclusion
+### Dampak dari Evaluasi Model Terhadap Business Understanding
 
-Proyek sistem rekomendasi buku ini berhasil menghasilkan dua pendekatan utama dalam memberikan rekomendasi yang relevan bagi pengguna: **Content-Based Filtering** dan **Collaborative Filtering**. Berdasarkan evaluasi performa masing-masing model, berikut adalah hasil yang diperoleh:
+Berdasarkan hasil evaluasi model **Content-Based Filtering** dan **Collaborative Filtering**, berikut adalah dampaknya terhadap pemahaman bisnis dan bagaimana solusi yang diterapkan dapat memberikan dampak positif terhadap platform rekomendasi buku.
 
-### 1. Content-Based Filtering
-- **Evaluasi**: Precision = 0.9
-- **Kesimpulan**: Pendekatan content-based menggunakan teknik TF-IDF dan Cosine Similarity menunjukkan hasil yang sangat baik dengan nilai precision 0.9. Ini menunjukkan bahwa rekomendasi yang dihasilkan sangat relevan dengan preferensi pengguna berdasarkan fitur konten buku seperti judul dan penulis. Sistem ini efektif dalam memberikan rekomendasi buku yang mirip dengan buku yang telah diberi rating oleh pengguna.
+---
 
-### 2. Collaborative Filtering
-- **Evaluasi**: RMSE = 0.3143, val_RMSE = 0.3533
-- **Kesimpulan**: Pendekatan collaborative filtering menggunakan Neural Collaborative Filtering (NCF) memberikan performa yang cukup baik dengan nilai RMSE sebesar 0.3143 pada data latih dan 0.3533 pada data validasi. Nilai RMSE yang lebih rendah menunjukkan bahwa model ini mampu memprediksi rating dengan akurat dan memberikan rekomendasi yang sesuai dengan preferensi pengguna berdasarkan interaksi mereka dengan buku-buku lainnya.
+### 1. **Apakah model ini sudah menjawab problem statement?**
 
-### Perbandingan Kedua Pendekatan
-- **Content-Based** lebih unggul dalam hal presisi, memberikan rekomendasi yang lebih relevan berdasarkan konten buku yang telah dibaca atau disukai pengguna.
-- **Collaborative Filtering** memiliki kemampuan untuk memberikan rekomendasi yang lebih beragam dan memperhitungkan interaksi pengguna dengan banyak buku, meskipun hasil evaluasinya sedikit lebih rendah dibandingkan content-based.
+**Problem Statement 1: Bagaimana cara menciptakan sistem rekomendasi buku yang dapat secara akurat menyesuaikan saran berdasarkan preferensi pembaca?**
 
-Secara keseluruhan, kedua pendekatan tersebut saling melengkapi dan dapat digunakan bersamaan untuk meningkatkan kualitas rekomendasi buku yang lebih akurat dan beragam untuk pengguna.
+- **Content-Based Filtering** berhasil menjawab pertanyaan ini dengan sangat baik. Dengan menggunakan teknik **TF-IDF** dan **Cosine Similarity**, sistem dapat memahami preferensi pengguna berdasarkan konten buku yang telah mereka baca atau beri rating. Nilai **precision = 0.9** menunjukkan bahwa sistem ini sangat relevan dalam menyesuaikan rekomendasi buku berdasarkan judul dan penulis yang disukai pengguna.
+
+- **Collaborative Filtering** juga menjawab pertanyaan ini dengan baik, meskipun hasil RMSE sedikit lebih tinggi dibandingkan content-based. Pendekatan **Neural Collaborative Filtering (NCF)** memungkinkan model untuk memberikan rekomendasi berdasarkan interaksi antar pengguna dan buku, sehingga menghasilkan saran yang lebih beragam.
+
+**Problem Statement 2: Dapatkah rekomendasi buku yang dipersonalisasi meningkatkan interaksi dan daya tarik platform dalam jangka panjang?**
+
+- **Content-Based Filtering** secara jelas meningkatkan **interaksi pengguna**, karena setiap rekomendasi yang diberikan relevan dengan preferensi mereka sebelumnya. Rekomendasi yang sangat tepat dapat meningkatkan kepuasan pengguna, yang akan meningkatkan tingkat keterlibatan.
+
+- **Collaborative Filtering** cenderung memberikan **rekomendasi yang lebih beragam**, yang dapat membantu meningkatkan **retensi pengguna**. Meskipun hasil RMSE lebih tinggi, kemampuan model untuk memberikan saran baru berdasarkan interaksi pengguna bisa meningkatkan **exploration** dan menarik pengguna untuk menjelajahi lebih banyak buku.
+
+**Problem Statement 3: Bagaimana perbedaan metode rekomendasi, seperti berbasis konten atau kolaboratif, dapat mempengaruhi kualitas dan relevansi saran buku yang diberikan?**
+
+- **Content-Based Filtering** memberikan rekomendasi yang sangat relevan dan spesifik berdasarkan konten buku, sehingga kualitas saran sangat tinggi, namun mungkin kurang bervariasi. Sebaliknya, **Collaborative Filtering** dapat memberikan saran yang lebih bervariasi, meskipun mungkin ada beberapa saran yang kurang tepat.
+
+---
+
+### 2. **Apakah model ini berhasil mencapai goals yang diharapkan?**
+
+**Goal 1: Meningkatkan interaksi pengguna dengan menyediakan rekomendasi buku yang disesuaikan dengan kebutuhan dan preferensi pribadi mereka.**
+
+- **Content-Based Filtering** memenuhi tujuan ini dengan sangat baik karena memberikan rekomendasi yang sangat relevan berdasarkan buku yang telah dibaca pengguna. Model ini memastikan bahwa setiap rekomendasi menyesuaikan dengan minat pembaca, yang dapat meningkatkan interaksi pengguna.
+
+- **Collaborative Filtering** juga mendekati tujuan ini dengan memberikan rekomendasi yang dipersonalisasi, meskipun hasilnya sedikit lebih bervariasi dan tidak selalu sepresisi content-based. Namun, rekomendasi yang lebih beragam dapat memotivasi pengguna untuk lebih sering kembali dan menjelajahi berbagai jenis buku.
+
+**Goal 2: Memberikan saran buku yang relevan dan beragam yang sesuai dengan preferensi individu.**
+
+- **Content-Based Filtering** lebih fokus pada relevansi, namun bisa saja terbatas pada buku-buku yang mirip dengan yang sudah ada. Namun, sistem ini sangat kuat dalam memberikan rekomendasi yang sesuai dengan preferensi individual pengguna.
+
+- **Collaborative Filtering** lebih unggul dalam memberikan **keberagaman** rekomendasi, karena mengandalkan data interaksi antar pengguna. Ini memberikan kesempatan untuk menemukan buku-buku baru yang belum tentu mirip dengan yang sudah dibaca, namun tetap menarik berdasarkan pola preferensi pengguna lainnya.
+
+**Goal 3: Menerapkan berbagai teknik rekomendasi dan mengevaluasi efektivitasnya dalam meningkatkan kualitas rekomendasi.**
+
+- Kedua model berhasil memenuhi goal ini. **Content-Based Filtering** menunjukkan **precision** yang tinggi, sedangkan **Collaborative Filtering** memberikan **diversitas** yang lebih baik. Evaluasi **precision** dan **RMSE** menunjukkan bahwa kedua model memberikan kontribusi yang signifikan untuk meningkatkan kualitas rekomendasi buku yang dipersonalisasi.
+
+---
+
+### 3. **Apakah solusi statement yang direncanakan berdampak?**
+
+**Solusi dengan Content-Based Filtering:**
+- Solusi ini berdampak positif dalam meningkatkan **relevansi** rekomendasi, karena sistem memberikan saran berdasarkan konten buku yang telah diberikan rating oleh pengguna. Dengan **precision = 0.9**, solusi ini efektif dalam menyarankan buku yang sangat sesuai dengan preferensi individu, dan hasilnya akan meningkatkan pengalaman pengguna secara keseluruhan.
+- Model ini dapat digunakan untuk pengguna yang memiliki riwayat buku tertentu yang ingin mereka eksplorasi lebih lanjut, dengan memberikan rekomendasi yang lebih sempit namun sangat relevan.
+
+**Solusi dengan Collaborative Filtering:**
+- Pendekatan **Collaborative Filtering** dengan menggunakan **Neural Collaborative Filtering** sangat efektif dalam memberikan **keberagaman** saran. Dengan memberikan rekomendasi berdasarkan interaksi pengguna lainnya, model ini memperkenalkan buku baru yang mungkin tidak diketahui oleh pengguna sebelumnya.
+- Meskipun evaluasi menunjukkan hasil RMSE yang sedikit lebih tinggi, kemampuan model untuk memberikan **rekomendasi yang lebih bervariasi** dapat sangat berguna dalam menarik kembali pengguna yang sudah lama tidak aktif dan mendorong mereka untuk menjelajahi lebih banyak buku.
+
+### **Kesimpulan**
+Kedua solusi rekomendasi ini, baik **Content-Based** maupun **Collaborative Filtering**, memiliki dampak yang positif terhadap platform rekomendasi buku. **Content-Based** lebih fokus pada **relevansi** dan **akurasi** saran, sementara **Collaborative Filtering** memberikan **keberagaman** rekomendasi. Dengan menerapkan kedua pendekatan ini, platform dapat menciptakan pengalaman pengguna yang lebih personal dan menarik, yang pada gilirannya akan meningkatkan interaksi dan retensi pengguna.
+
