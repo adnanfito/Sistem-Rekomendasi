@@ -265,7 +265,7 @@ Fungsi `book_recommendations` digunakan untuk memberikan rekomendasi buku berdas
    Fungsi ini mengembalikan dataframe yang berisi `k` buku yang paling mirip dengan buku yang diberikan beserta informasi tambahan tentang setiap buku.
 
 #### Contoh Penggunaan:
-Jika kita ingin merekomendasikan 5 buku yang mirip dengan buku "Harry Potter", kita dapat memanggil fungsi ini seperti berikut:
+Jika kita ingin merekomendasikan 10 buku yang mirip dengan buku "Little Wolf's Book of Badness", kita dapat memanggil fungsi ini seperti berikut:
 
 ```python
 book_recommendations("Little Wolf's Book of Badness")
